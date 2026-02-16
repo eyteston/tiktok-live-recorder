@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "tiktok-live-recorder"
+version = "1.0.0"
+description = "Record TikTok live streams with real-time chat capture, overlay generation, and auto-monitoring"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Cj" },
+]
+keywords = ["tiktok", "livestream", "recorder", "chat", "overlay"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Video :: Capture",
+]
+
+dependencies = [
+    "TikTokLive>=6.6.5",
+    "ffmpeg-python>=0.2.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+gui = [
+    "PyQt6>=6.6.0",
+]
+notifications = [
+    "aiohttp>=3.9.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "ruff>=0.4.0",
+    "mypy>=1.8",
+]
+all = [
+    "tiktok-live-recorder[gui,notifications,dev]",
+]
+
+[project.scripts]
+tiktok-recorder = "src.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/sandcorecj/tiktok-live-recorder"
+Repository = "https://github.com/sandcorecj/tiktok-live-recorder"
+Issues = "https://github.com/sandcorecj/tiktok-live-recorder/issues"
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

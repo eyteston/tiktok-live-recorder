@@ -1,0 +1,14 @@
+services:
+  recorder:
+    build: .
+    container_name: tiktok-recorder
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./recordings:/app/recordings
+      - ./settings.json:/app/settings.json:ro
+    # Pass the username(s) to monitor as the command
+    # Example: docker compose run recorder username1
+    # For multi-user monitoring, use the GUI or run multiple containers
+    command: ["--help"]

@@ -1,0 +1,65 @@
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.eggs/
+
+# ─── Virtual environments ─────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ─── IDE / Editor ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ─── Project secrets & user data ──────────────────────────────────────────────
+settings.json
+.env
+*.session
+cookies.txt
+
+# ─── Recordings & runtime data ────────────────────────────────────────────────
+recordings/
+avatar_cache/
+logs/
+*.flv
+*.ass
+
+# ─── Testing ──────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ─── Docker ───────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── Tool / IDE config ────────────────────────────────────────────────────────
+.claude/
+.orchids/
+.local-plugins/
+.skills/
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+nul
+*.log
+tasks.json
