@@ -292,6 +292,7 @@ class TikTokRecorder:
                         self._on_stream_url(stream_url)
                     except Exception:
                         pass
+                assert stream_url is not None
                 stream_recorder = StreamRecorder(stream_url, self.session.raw_video_path, self.config)
                 stream_recorder.start()
                 self._log(f"Recording video (quality: {actual_quality}) + capturing chat...")
@@ -371,6 +372,7 @@ class TikTokRecorder:
             has_chat = chat is not None and len(chat.messages) > 0
 
             if has_chat and has_video and not self.config.no_overlay and not self._stop_requested:
+                assert chat is not None
                 self._emit_status("encoding")
                 self._log("Generating chat overlay...")
 
@@ -405,6 +407,7 @@ class TikTokRecorder:
                 else:
                     self._log("Overlay encoding failed or cancelled. Raw video + subtitle file preserved.")
             elif has_chat and not has_video:
+                assert chat is not None
                 gen = SubtitleGenerator(self.config)
                 gen.write(chat.messages, self.session.subtitle_path)
                 self._log("Chat-only mode: subtitle file saved for later use.")

@@ -450,7 +450,7 @@ class TaskCard(QFrame):
     def _on_chat(self, msg: ChatMessage):
         self.msg_count += 1
         self.chat_count_label.setText(f"\u2709 {self.msg_count} msgs")
-        self.info_chat_count.setText(str(self.msg_count))
+        self.info_chat_count.setText(str(self.msg_count))  # type: ignore[attr-defined]
 
         if msg.event_type == "gift":
             color = "#fbbf24"
@@ -1049,7 +1049,7 @@ class MainWindow(QMainWindow):
         scroll.setStyleSheet("QScrollArea { border: none; background-color: #0a0f1a; }")
 
         idx = self.stack.addWidget(scroll)
-        card._scroll_area = scroll
+        card._scroll_area = scroll  # type: ignore[attr-defined]
 
         item = QListWidgetItem(f"@{config.unique_id}")
         # Set placeholder avatar, then fetch real one in background
@@ -1072,7 +1072,7 @@ class MainWindow(QMainWindow):
                 card.info_last_live.setText(card.last_live_time)
             self._apply_filters()
 
-        card.worker_status_callback = update_item_status
+        card.worker_status_callback = update_item_status  # type: ignore[assignment]
         card.status_updated.connect(update_item_status)
 
         self._update_task_count()

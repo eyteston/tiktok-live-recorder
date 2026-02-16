@@ -80,7 +80,7 @@ class StreamRecorder:
         # handle inheritance conflicts between concurrent recordings
         if sys.platform == "win32":
             kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
-        self._process = subprocess.Popen(cmd, **kwargs)
+        self._process = subprocess.Popen(cmd, **kwargs)  # type: ignore[call-overload]
         self._start_time = time.time()
 
     def stop(self) -> str | None:

@@ -84,12 +84,13 @@ class OverlayEncoder:
             if sys.platform == "win32":
                 kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
             with self._lock:
-                self._process = subprocess.Popen(cmd, **kwargs)
+                self._process = subprocess.Popen(cmd, **kwargs)  # type: ignore[call-overload]
 
             # Read stderr line-by-line to prevent pipe buffer deadlock.
             # Previously used self._process.wait() which deadlocks when
             # the stderr pipe buffer fills (~65KB) and nobody reads it.
             stderr_lines: list[str] = []
+            assert self._process.stderr is not None
             for line in iter(self._process.stderr.readline, b""):
                 if self._cancelled:
                     break

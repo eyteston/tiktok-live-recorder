@@ -24,7 +24,7 @@ def find_ffmpeg(ffmpeg_path: str = "ffmpeg") -> str | None:
             run_kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
         result = subprocess.run(
             [ffmpeg_path, "-version"],
-            **run_kwargs,
+            **run_kwargs,  # type: ignore[call-overload]
         )
         if result.returncode == 0:
             return ffmpeg_path

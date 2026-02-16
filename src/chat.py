@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 import time
@@ -26,7 +27,7 @@ class ChatCapture:
         self.start_time: float = 0.0
         self.connected: bool = False
         self.stream_ended: bool = False
-        self._log_file = None
+        self._log_file: io.TextIOWrapper | None = None
 
     def _register_events(self) -> None:
         self.client.add_listener(ConnectEvent, self._on_connect)
