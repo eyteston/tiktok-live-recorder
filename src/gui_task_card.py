@@ -107,7 +107,7 @@ class TaskCard(QFrame):
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
-        layout.setSpacing(12)
+        layout.setSpacing(16)
         layout.setContentsMargins(0, 0, 0, 0)
 
         self._build_header(layout)
@@ -132,7 +132,7 @@ class TaskCard(QFrame):
 
     def _build_progress_bar(self, parent_layout: QVBoxLayout):
         self.progress_bar = QProgressBar()
-        self.progress_bar.setFixedHeight(6)
+        self.progress_bar.setFixedHeight(4)
         self.progress_bar.setRange(0, 0)
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setStyleSheet(progress_bar_style("#334155"))
@@ -140,9 +140,9 @@ class TaskCard(QFrame):
 
     def _build_stats_row(self, parent_layout: QVBoxLayout):
         stats_row = QHBoxLayout()
-        stats_row.setSpacing(20)
+        stats_row.setSpacing(24)
 
-        self.speed_label = self._stat_label("\u2193 0 KB/s")
+        self.speed_label = self._stat_label("\u2193 0 KB/s", "Download speed")
         stats_row.addWidget(self.speed_label)
 
         self.duration_label = self._stat_label("\u23f1 0:00:00", "Recording duration")
@@ -151,10 +151,10 @@ class TaskCard(QFrame):
         self.monitoring_label = self._stat_label("\u231b 0:00:00", "Monitoring time")
         stats_row.addWidget(self.monitoring_label)
 
-        self.chat_count_label = self._stat_label("\u2709 0 msgs")
+        self.chat_count_label = self._stat_label("\u2709 0 msgs", "Chat messages")
         stats_row.addWidget(self.chat_count_label)
 
-        self.quality_label = self._stat_label(f"\u25aa {self.config.quality.upper()}")
+        self.quality_label = self._stat_label(f"\u25aa {self.config.quality.upper()}", "Video quality")
         stats_row.addWidget(self.quality_label)
 
         stats_row.addStretch()
@@ -169,7 +169,7 @@ class TaskCard(QFrame):
 
     def _build_action_buttons(self, parent_layout: QVBoxLayout):
         btn_row = QHBoxLayout()
-        btn_row.setSpacing(6)
+        btn_row.setSpacing(8)
 
         self.start_btn = self._icon_btn("\u25b6", "Start Recording")
         self.start_btn.clicked.connect(self.start_recording)

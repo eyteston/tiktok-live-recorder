@@ -30,11 +30,21 @@ DEFAULT_SETTINGS: dict = {
 
 # ─── Layout constants ────────────────────────────────────────────────────────
 
-SIDEBAR_WIDTH = 250
-TITLEBAR_HEIGHT = 52
-CARD_SPACING = 12
-CARD_PADDING = 20
-BUTTON_ICON_SIZE = 30
+SIDEBAR_WIDTH = 280
+TITLEBAR_HEIGHT = 48
+CARD_SPACING = 16
+CARD_PADDING = 24
+BUTTON_ICON_SIZE = 32
+BORDER_RADIUS = 8
+INPUT_HEIGHT = 36
+
+# ─── Spacing scale (8px grid) ───────────────────────────────────────────────
+
+SPACING_XS = 4
+SPACING_SM = 8
+SPACING_MD = 16
+SPACING_LG = 24
+SPACING_XL = 32
 
 # ─── Feed limits (prevent unbounded memory growth) ───────────────────────────
 

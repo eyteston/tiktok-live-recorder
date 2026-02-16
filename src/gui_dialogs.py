@@ -40,7 +40,7 @@ class NewTaskDialog(QDialog):
         super().__init__(parent)
         self._editing = existing_config is not None
         self.setWindowTitle("Edit Task" if self._editing else "New Recording Task")
-        self.setFixedSize(480, 720)
+        self.setFixedSize(500, 740)
         self.result_config: Config | None = None
         self._build_ui()
         if existing_config:
@@ -56,8 +56,8 @@ class NewTaskDialog(QDialog):
         scroll.setStyleSheet(SCROLL_AREA_BORDERLESS)
         form = QWidget()
         layout = QVBoxLayout(form)
-        layout.setSpacing(14)
-        layout.setContentsMargins(24, 24, 24, 12)
+        layout.setSpacing(16)
+        layout.setContentsMargins(28, 28, 28, 16)
 
         title = QLabel("Edit Task" if self._editing else "New Recording Task")
         title.setObjectName("title")
@@ -256,7 +256,7 @@ class PreferencesDialog(QDialog):
         super().__init__(parent)
         self.settings = dict(settings)
         self.setWindowTitle("Preferences")
-        self.setFixedSize(600, 520)
+        self.setFixedSize(620, 540)
         self._build_ui()
 
     def _build_ui(self):

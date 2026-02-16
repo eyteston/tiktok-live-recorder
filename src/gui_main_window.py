@@ -30,6 +30,8 @@ from src.config import Config
 from src.gui_constants import (
     GLOBAL_SPEED_UPDATE_INTERVAL,
     SIDEBAR_WIDTH,
+    SPACING_MD,
+    SPACING_SM,
     TASKS_FILE,
     TITLEBAR_HEIGHT,
 )
@@ -72,7 +74,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("TikTok Live Recorder")
         self.setMinimumSize(1100, 700)
-        self.resize(1200, 750)
+        self.resize(1280, 800)
         self.tasks: list[tuple[QListWidgetItem, TaskCard]] = []
         self.settings = load_settings()
         self.rate_limiter = RateLimiter(min_delay=float(self.settings.get("rate_limit_delay", 10)))
@@ -142,23 +144,23 @@ class MainWindow(QMainWindow):
         sidebar.setObjectName("sidebar")
         sidebar.setFixedWidth(SIDEBAR_WIDTH)
         sb_layout = QVBoxLayout(sidebar)
-        sb_layout.setContentsMargins(14, 18, 14, 14)
-        sb_layout.setSpacing(10)
+        sb_layout.setContentsMargins(SPACING_MD, 20, SPACING_MD, SPACING_MD)
+        sb_layout.setSpacing(12)
 
         # New task button
         new_btn = QPushButton("+  New Task")
         new_btn.setObjectName("accent")
-        new_btn.setFixedHeight(44)
+        new_btn.setFixedHeight(40)
         new_btn.clicked.connect(self._new_task)
         sb_layout.addWidget(new_btn)
 
-        # Status filter row
+        # Status filter row — pill toggles
         self._build_filter_row(sb_layout)
 
         # Search
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Search tasks...")
-        self.search_input.setFixedHeight(32)
+        self.search_input.setPlaceholderText("\U0001f50d  Search tasks...")
+        self.search_input.setFixedHeight(34)
         self.search_input.setStyleSheet(SEARCH_INPUT_STYLE)
         self.search_input.textChanged.connect(self._on_search_changed)
         sb_layout.addWidget(self.search_input)
@@ -196,7 +198,7 @@ class MainWindow(QMainWindow):
 
     def _build_filter_row(self, sb_layout: QVBoxLayout):
         filter_row = QHBoxLayout()
-        filter_row.setSpacing(4)
+        filter_row.setSpacing(SPACING_SM)
 
         self.filter_active_btn = self._filter_btn("\u25b6 Active", "active")
         filter_row.addWidget(self.filter_active_btn)
@@ -220,7 +222,7 @@ class MainWindow(QMainWindow):
         content = QWidget()
         content.setStyleSheet(CONTENT_BG_STYLE)
         self.content_layout = QVBoxLayout(content)
-        self.content_layout.setContentsMargins(28, 24, 28, 24)
+        self.content_layout.setContentsMargins(SPACING_MD + 8, SPACING_MD, SPACING_MD + 8, SPACING_MD)
         self.content_layout.setSpacing(0)
 
         self.stack = QStackedWidget()
@@ -239,13 +241,13 @@ class MainWindow(QMainWindow):
         empty_circle.setFixedSize(80, 80)
         empty_circle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         empty_layout.addWidget(empty_circle, 0, Qt.AlignmentFlag.AlignCenter)
-        empty_layout.addSpacing(16)
+        empty_layout.addSpacing(SPACING_MD)
 
         empty_text = QLabel("No recording tasks yet")
         empty_text.setStyleSheet(EMPTY_TEXT_STYLE)
         empty_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         empty_layout.addWidget(empty_text)
-        empty_layout.addSpacing(6)
+        empty_layout.addSpacing(SPACING_SM)
 
         empty_sub = QLabel('Click "+ New Task" to start monitoring a TikTok live stream')
         empty_sub.setStyleSheet(EMPTY_SUB_STYLE)
