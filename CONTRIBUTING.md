@@ -6,7 +6,7 @@ Thanks for your interest in contributing! Here's how to get started.
 
 ```bash
 # Clone the repo
-git clone https://github.com/sandcorecj/tiktok-live-recorder.git
+git clone https://github.com/eyteston/tiktok-live-recorder.git
 cd tiktok-live-recorder
 
 # Create a virtual environment

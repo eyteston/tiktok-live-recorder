@@ -54,9 +54,9 @@ all = [
 tiktok-recorder = "src.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/sandcorecj/tiktok-live-recorder"
-Repository = "https://github.com/sandcorecj/tiktok-live-recorder"
-Issues = "https://github.com/sandcorecj/tiktok-live-recorder/issues"
+Homepage = "https://github.com/eyteston/tiktok-live-recorder"
+Repository = "https://github.com/eyteston/tiktok-live-recorder"
+Issues = "https://github.com/eyteston/tiktok-live-recorder/issues"
 
 [tool.setuptools.packages.find]
 include = ["src*"]
