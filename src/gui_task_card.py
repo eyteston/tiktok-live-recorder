@@ -708,6 +708,8 @@ class TaskCard(QFrame):
 def _truncate_feed(feed: QTextEdit, max_lines: int) -> None:
     """Remove oldest lines from a QTextEdit when it exceeds max_lines."""
     doc = feed.document()
+    if doc is None:
+        return
     while doc.blockCount() > max_lines:
         cursor = feed.textCursor()
         cursor.movePosition(cursor.MoveOperation.Start)
