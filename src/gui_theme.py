@@ -1,7 +1,35 @@
+# ─── Theme & Styling ─────────────────────────────────────────────────────────
+# Centralizes all visual styling: colors, status mappings, and the global
+# dark stylesheet. Inline styles that were scattered across gui.py and
+# gui_dialogs.py are now exposed as reusable helper functions.
+
+# ─── Color palette ───────────────────────────────────────────────────────────
+
+ACCENT = "#F88C5E"
+ACCENT_HOVER = "#f9a07a"
+BG_DEEP = "#0a0f1a"
+BG_CARD = "#111827"
+BG_INPUT = "#1e293b"
+BG_BORDER = "#1f2937"
+BG_BORDER_HOVER = "#2d3a4f"
+BORDER_INPUT = "#334155"
+BORDER_HOVER = "#475569"
+TEXT_PRIMARY = "#f8fafc"
+TEXT_SECONDARY = "#e2e8f0"
+TEXT_MUTED = "#94a3b8"
+TEXT_DIM = "#64748b"
+TEXT_FAINT = "#4b5563"
+TEXT_DISABLED = "#475569"
+CHAT_COMMENT_COLOR = "#F88C5E"
+CHAT_GIFT_COLOR = "#fbbf24"
+CHAT_JOIN_COLOR = "#60a5fa"
+CHAT_CONTENT_COLOR = "#cbd5e1"
+SPEED_INDICATOR_COLOR = "#60a5fa"
+
 # ─── Status helpers ──────────────────────────────────────────────────────────
 
-STATUS_COLORS = {
-    "idle": ("#1e293b", "#6b7280"),
+STATUS_COLORS: dict[str, tuple[str, str]] = {
+    "idle": (BG_INPUT, "#6b7280"),
     "checking": ("rgba(96, 165, 250, 0.1)", "#60a5fa"),
     "monitoring": ("rgba(168, 85, 247, 0.1)", "#a855f7"),
     "recording": ("rgba(74, 222, 128, 0.1)", "#4ade80"),
@@ -10,7 +38,7 @@ STATUS_COLORS = {
     "error": ("rgba(248, 113, 113, 0.1)", "#f87171"),
 }
 
-STATUS_DOTS = {
+STATUS_DOTS: dict[str, str] = {
     "idle": "\u25cb",  # empty circle
     "checking": "\u25d4",  # quarter circle
     "monitoring": "\u25ce",  # bullseye
@@ -24,12 +52,125 @@ ACTIVE_STATUSES = {"recording", "encoding", "checking"}
 WAITING_STATUSES = {"monitoring", "idle"}
 STOPPED_STATUSES = {"done", "error"}
 
-PROGRESS_COLORS = {
+PROGRESS_COLORS: dict[str, str] = {
     "recording": "#4ade80",
     "monitoring": "#a855f7",
     "checking": "#60a5fa",
     "encoding": "#fbbf24",
 }
+
+# ─── Inline style helpers ────────────────────────────────────────────────────
+# These replace hardcoded style strings that were duplicated across modules.
+
+
+def status_badge_style(bg: str, fg: str) -> str:
+    """Dynamic style for the status badge on a TaskCard."""
+    return (
+        f"background-color: {bg}; color: {fg}; "
+        f"font-size: 11px; font-weight: 700; padding: 4px 12px; "
+        f"border-radius: 12px; letter-spacing: 0.5px;"
+    )
+
+
+def progress_bar_style(color: str) -> str:
+    """Dynamic style for a TaskCard progress bar chunk color."""
+    return (
+        f"QProgressBar {{ background-color: {BG_INPUT}; border-radius: 3px; }}"
+        f"QProgressBar::chunk {{ background-color: {color}; border-radius: 3px; }}"
+    )
+
+
+def info_status_style(fg: str) -> str:
+    """Dynamic style for the info panel status value."""
+    return f"color: {fg}; font-size: 12px; font-weight: 700;"
+
+
+STAT_LABEL_STYLE = f"color: {TEXT_DIM}; font-size: 12px; font-weight: 500;"
+INFO_KEY_STYLE = f"color: {TEXT_DIM}; font-size: 12px; font-weight: 600;"
+INFO_VALUE_STYLE = f"color: {TEXT_SECONDARY}; font-size: 12px;"
+USERNAME_STYLE = f"font-size: 18px; font-weight: 700; color: {TEXT_PRIMARY}; letter-spacing: -0.3px;"
+PREVIEW_TITLE_STYLE = f"font-size: 12px; font-weight: 600; color: {TEXT_MUTED};"
+PREVIEW_LABEL_STYLE = (
+    f"QLabel {{ background-color: #000000; border: 1px solid {BORDER_INPUT}; "
+    f"border-radius: 8px; color: {TEXT_DISABLED}; font-size: 12px; }}"
+)
+VOLUME_LABEL_STYLE = f"color: {TEXT_DIM}; font-size: 11px; min-width: 32px;"
+TOGGLE_PREVIEW_STYLE = "QPushButton { padding: 2px 8px; font-size: 11px; }"
+DETAIL_TABS_PANE_STYLE = (
+    f"QTabWidget::pane {{ border: 1px solid {BG_BORDER}; border-radius: 8px; "
+    f"background-color: #0d1321; padding: 8px; }}"
+)
+SPLITTER_HANDLE_STYLE = f"QSplitter::handle {{ background-color: {BG_BORDER}; border-radius: 2px; }}"
+TITLEBAR_STYLE = f"background-color: {BG_CARD}; border-bottom: 1px solid {BG_BORDER};"
+LOGO_STYLE = f"color: {ACCENT}; font-size: 20px; padding: 2px 6px; margin-right: 4px;"
+APP_TITLE_STYLE = f"font-size: 16px; font-weight: 700; color: {TEXT_PRIMARY}; letter-spacing: -0.3px;"
+VERSION_CHIP_STYLE = (
+    f"font-size: 10px; font-weight: 600; color: {TEXT_DIM}; "
+    f"background-color: {BG_INPUT}; border-radius: 4px; "
+    f"padding: 2px 6px; margin-left: 8px;"
+)
+GLOBAL_SPEED_STYLE = (
+    f"color: {SPEED_INDICATOR_COLOR}; font-size: 11px; font-weight: 600; "
+    f"background-color: rgba(96, 165, 250, 0.08); "
+    f"border-radius: 6px; padding: 4px 10px; margin-right: 8px;"
+)
+SIDEBAR_BODY_STYLE = f"QSplitter::handle {{ background-color: {BG_BORDER}; }}"
+TASK_HEADER_LABEL_STYLE = (
+    f"color: {TEXT_FAINT}; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; padding-top: 6px;"
+)
+TASK_COUNT_STYLE = (
+    f"color: #6b7280; font-size: 10px; font-weight: 700; "
+    f"background-color: {BG_BORDER}; border-radius: 8px; "
+    f"padding: 2px 8px; margin-top: 4px;"
+)
+SEARCH_INPUT_STYLE = (
+    f"QLineEdit {{ background-color: {BG_INPUT}; border: 1px solid {BORDER_INPUT}; "
+    f"border-radius: 6px; padding: 4px 10px; font-size: 12px; }}"
+)
+SEPARATOR_STYLE = f"background-color: {BG_BORDER}; max-height: 1px;"
+SCROLL_AREA_TRANSPARENT = f"QScrollArea {{ border: none; background-color: {BG_DEEP}; }}"
+SCROLL_AREA_BORDERLESS = "QScrollArea { border: none; }"
+CONTENT_BG_STYLE = f"background-color: {BG_DEEP};"
+EMPTY_CIRCLE_STYLE = (
+    f"font-size: 36px; color: {ACCENT}; background-color: rgba(248, 140, 94, 0.08); border-radius: 40px; padding: 20px;"
+)
+EMPTY_TEXT_STYLE = f"font-size: 18px; font-weight: 600; color: {TEXT_SECONDARY};"
+EMPTY_SUB_STYLE = f"font-size: 13px; color: {TEXT_DIM};"
+FORM_LABEL_STYLE = f"color: {TEXT_MUTED}; font-size: 12px; font-weight: 600;"
+DIALOG_BUTTON_BAR_STYLE = f"background-color: #0f172a; border-top: 1px solid {BORDER_INPUT};"
+DIALOG_HEADER_STYLE = f"background-color: {BG_CARD}; border-bottom: 1px solid {BG_BORDER};"
+DIALOG_HEADER_TITLE_STYLE = f"font-size: 16px; font-weight: 700; color: {TEXT_PRIMARY};"
+SECONDARY_BUTTON_STYLE = (
+    f"QPushButton {{ background-color: {BG_INPUT}; border: 1px solid {BORDER_INPUT}; "
+    f"border-radius: 8px; padding: 8px 16px; color: {TEXT_SECONDARY}; font-weight: 500; }}"
+    f"QPushButton:hover {{ background-color: #293548; border-color: {BORDER_HOVER}; }}"
+)
+SAVE_BUTTON_STYLE = (
+    f"QPushButton {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
+    f"stop:0 {ACCENT}, stop:1 #f47944); border: none; border-radius: 8px; "
+    f"padding: 8px 24px; color: white; font-weight: 700; }}"
+    f"QPushButton:hover {{ background-color: {ACCENT_HOVER}; }}"
+)
+VALIDATION_ERROR_STYLE = (
+    f"QLineEdit {{ border: 1px solid #ef4444; background-color: {BORDER_INPUT}; "
+    f"border-radius: 8px; padding: 8px 12px; color: {TEXT_SECONDARY}; }}"
+)
+
+# ─── Log entry formatting ────────────────────────────────────────────────────
+
+
+def format_log_html(timestamp: str, text: str) -> str:
+    """Format a log/encoding entry as HTML."""
+    return f'<span style="color:{TEXT_DISABLED};">[{timestamp}]</span> <span style="color:{TEXT_MUTED};">{text}</span>'
+
+
+def format_chat_html(prefix: str, color: str, nickname: str, content: str) -> str:
+    """Format a chat message as HTML."""
+    return (
+        f'<span style="color:{color};">{prefix} <b>{nickname}</b></span> '
+        f'<span style="color:{CHAT_CONTENT_COLOR};">{content}</span>'
+    )
+
 
 # ─── Dark Theme ──────────────────────────────────────────────────────────────
 
@@ -344,7 +485,7 @@ QSlider::sub-page:horizontal {
     border-radius: 2px;
 }
 
-/* ── Tab Widget (Preferences) ─────────────────────────────────────────── */
+/* ── Tab Widget ───────────────────────────────────────────────────────── */
 QTabWidget::pane {
     border: none;
     background-color: #0a0f1a;

@@ -18,6 +18,17 @@ from PyQt6.QtWidgets import (
 )
 
 from src.config import Config
+from src.gui_constants import CHAT_POSITION_OPTIONS, QUALITY_OPTIONS
+from src.gui_theme import (
+    DIALOG_BUTTON_BAR_STYLE,
+    DIALOG_HEADER_STYLE,
+    DIALOG_HEADER_TITLE_STYLE,
+    FORM_LABEL_STYLE,
+    SAVE_BUTTON_STYLE,
+    SCROLL_AREA_BORDERLESS,
+    SECONDARY_BUTTON_STYLE,
+    VALIDATION_ERROR_STYLE,
+)
 
 # ─── New Task Dialog ─────────────────────────────────────────────────────────
 
@@ -42,7 +53,7 @@ class NewTaskDialog(QDialog):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setStyleSheet("QScrollArea { border: none; }")
+        scroll.setStyleSheet(SCROLL_AREA_BORDERLESS)
         form = QWidget()
         layout = QVBoxLayout(form)
         layout.setSpacing(14)
@@ -59,7 +70,7 @@ class NewTaskDialog(QDialog):
 
         layout.addWidget(self._label("Video Quality"))
         self.quality_combo = QComboBox()
-        self.quality_combo.addItems(["hd", "uhd", "sd", "ld", "origin"])
+        self.quality_combo.addItems(QUALITY_OPTIONS)
         layout.addWidget(self.quality_combo)
 
         layout.addWidget(self._label("Output Directory"))
@@ -124,7 +135,7 @@ class NewTaskDialog(QDialog):
         pos_row = QHBoxLayout()
         pos_row.addWidget(QLabel("Position:"))
         self.pos_combo = QComboBox()
-        self.pos_combo.addItems(["bottom-left", "bottom-right", "top-left", "top-right"])
+        self.pos_combo.addItems(CHAT_POSITION_OPTIONS)
         pos_row.addWidget(self.pos_combo)
         pos_row.addWidget(QLabel("Opacity:"))
         self.opacity_spin = QDoubleSpinBox()
@@ -153,7 +164,7 @@ class NewTaskDialog(QDialog):
         outer.addWidget(scroll, 1)
 
         btn_bar = QWidget()
-        btn_bar.setStyleSheet("background-color: #0f172a; border-top: 1px solid #334155;")
+        btn_bar.setStyleSheet(DIALOG_BUTTON_BAR_STYLE)
         btn_layout = QHBoxLayout(btn_bar)
         btn_layout.setContentsMargins(24, 12, 24, 16)
         cancel_btn = QPushButton("Cancel")
@@ -168,7 +179,7 @@ class NewTaskDialog(QDialog):
 
     def _label(self, text: str) -> QLabel:
         lbl = QLabel(text)
-        lbl.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 600;")
+        lbl.setStyleSheet(FORM_LABEL_STYLE)
         return lbl
 
     def _browse_dir(self):
@@ -209,10 +220,7 @@ class NewTaskDialog(QDialog):
     def _accept(self):
         username = self._extract_username(self.username_input.text())
         if not username:
-            self.username_input.setStyleSheet(
-                "QLineEdit { border: 1px solid #ef4444; background-color: #334155; "
-                "border-radius: 8px; padding: 8px 12px; color: #e2e8f0; }"
-            )
+            self.username_input.setStyleSheet(VALIDATION_ERROR_STYLE)
             return
 
         max_dur = self.duration_spin.value()
@@ -242,7 +250,7 @@ class NewTaskDialog(QDialog):
 
 
 class PreferencesDialog(QDialog):
-    """Multi-tab preferences dialog inspired by OlivedPro."""
+    """Multi-tab preferences dialog."""
 
     def __init__(self, settings: dict, parent=None):
         super().__init__(parent)
@@ -258,12 +266,12 @@ class PreferencesDialog(QDialog):
 
         # Header
         header = QWidget()
-        header.setStyleSheet("background-color: #111827; border-bottom: 1px solid #1f2937;")
+        header.setStyleSheet(DIALOG_HEADER_STYLE)
         header.setFixedHeight(48)
         h_layout = QHBoxLayout(header)
         h_layout.setContentsMargins(20, 0, 20, 0)
         title = QLabel("Preferences")
-        title.setStyleSheet("font-size: 16px; font-weight: 700; color: #f8fafc;")
+        title.setStyleSheet(DIALOG_HEADER_TITLE_STYLE)
         h_layout.addWidget(title)
         outer.addWidget(header)
 
@@ -271,7 +279,12 @@ class PreferencesDialog(QDialog):
         self.tabs = QTabWidget()
         outer.addWidget(self.tabs, 1)
 
-        # ── Basic tab ──
+        self._build_basic_tab()
+        self._build_advanced_tab()
+        self._build_overlay_tab()
+        self._build_button_bar(outer)
+
+    def _build_basic_tab(self):
         basic = QWidget()
         bl = QVBoxLayout(basic)
         bl.setSpacing(16)
@@ -279,7 +292,7 @@ class PreferencesDialog(QDialog):
 
         bl.addWidget(self._label("Default Quality"))
         self.quality_combo = QComboBox()
-        self.quality_combo.addItems(["hd", "uhd", "sd", "ld", "origin"])
+        self.quality_combo.addItems(QUALITY_OPTIONS)
         idx = self.quality_combo.findText(self.settings.get("default_quality", "hd"))
         if idx >= 0:
             self.quality_combo.setCurrentIndex(idx)
@@ -290,11 +303,7 @@ class PreferencesDialog(QDialog):
         self.output_input = QLineEdit(self.settings.get("default_output_dir", "./recordings"))
         dir_row.addWidget(self.output_input)
         browse_btn = QPushButton("Browse")
-        browse_btn.setStyleSheet(
-            "QPushButton { background-color: #1e293b; border: 1px solid #334155; "
-            "border-radius: 8px; padding: 8px 16px; color: #e2e8f0; font-weight: 500; }"
-            "QPushButton:hover { background-color: #293548; border-color: #475569; }"
-        )
+        browse_btn.setStyleSheet(SECONDARY_BUTTON_STYLE)
         browse_btn.clicked.connect(self._browse_dir)
         dir_row.addWidget(browse_btn)
         bl.addLayout(dir_row)
@@ -308,7 +317,7 @@ class PreferencesDialog(QDialog):
         bl.addStretch()
         self.tabs.addTab(basic, "Basic")
 
-        # ── Advanced tab ──
+    def _build_advanced_tab(self):
         advanced = QWidget()
         al = QVBoxLayout(advanced)
         al.setSpacing(16)
@@ -329,7 +338,7 @@ class PreferencesDialog(QDialog):
         al.addStretch()
         self.tabs.addTab(advanced, "Advanced")
 
-        # ── Chat Overlay tab ──
+    def _build_overlay_tab(self):
         overlay = QWidget()
         ol = QVBoxLayout(overlay)
         ol.setSpacing(12)
@@ -367,7 +376,7 @@ class PreferencesDialog(QDialog):
         row3 = QHBoxLayout()
         row3.addWidget(QLabel("Position:"))
         self.pos_combo = QComboBox()
-        self.pos_combo.addItems(["bottom-left", "bottom-right", "top-left", "top-right"])
+        self.pos_combo.addItems(CHAT_POSITION_OPTIONS)
         pos_idx = self.pos_combo.findText(self.settings.get("default_chat_position", "bottom-left"))
         if pos_idx >= 0:
             self.pos_combo.setCurrentIndex(pos_idx)
@@ -400,36 +409,27 @@ class PreferencesDialog(QDialog):
         ol.addStretch()
         self.tabs.addTab(overlay, "Chat Overlay")
 
-        # ── Button bar ──
+    def _build_button_bar(self, outer: QVBoxLayout):
         btn_bar = QWidget()
-        btn_bar.setStyleSheet("background-color: #0f172a; border-top: 1px solid #1f2937;")
+        btn_bar.setStyleSheet(DIALOG_BUTTON_BAR_STYLE)
         btn_layout = QHBoxLayout(btn_bar)
         btn_layout.setContentsMargins(24, 12, 24, 16)
 
         cancel_btn = QPushButton("Discard")
-        cancel_btn.setStyleSheet(
-            "QPushButton { background-color: #1e293b; border: 1px solid #334155; "
-            "border-radius: 8px; padding: 8px 20px; color: #e2e8f0; font-weight: 500; }"
-            "QPushButton:hover { background-color: #293548; border-color: #475569; }"
-        )
+        cancel_btn.setStyleSheet(SECONDARY_BUTTON_STYLE)
         cancel_btn.clicked.connect(self.reject)
         btn_layout.addWidget(cancel_btn)
         btn_layout.addStretch()
 
         save_btn = QPushButton("Save")
-        save_btn.setStyleSheet(
-            "QPushButton { background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-            "stop:0 #F88C5E, stop:1 #f47944); border: none; border-radius: 8px; "
-            "padding: 8px 24px; color: white; font-weight: 700; }"
-            "QPushButton:hover { background-color: #f9a07a; }"
-        )
+        save_btn.setStyleSheet(SAVE_BUTTON_STYLE)
         save_btn.clicked.connect(self._save)
         btn_layout.addWidget(save_btn)
         outer.addWidget(btn_bar)
 
     def _label(self, text: str) -> QLabel:
         lbl = QLabel(text)
-        lbl.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 600;")
+        lbl.setStyleSheet(FORM_LABEL_STYLE)
         return lbl
 
     def _browse_dir(self):
