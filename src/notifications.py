@@ -10,7 +10,6 @@ import os
 import smtplib
 from datetime import datetime
 from email.mime.text import MIMEText
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +46,7 @@ class NotificationManager:
     def _check_cooldown(self, username: str) -> bool:
         """Returns True if notification should be sent (not in cooldown)."""
         import time
+
         now = time.time()
         last = self._cooldowns.get(username, 0)
         if now - last < self._cooldown_seconds:
@@ -54,7 +54,7 @@ class NotificationManager:
         self._cooldowns[username] = now
         return True
 
-    async def notify_live(self, username: str, room_id: Optional[int] = None) -> None:
+    async def notify_live(self, username: str, room_id: int | None = None) -> None:
         """Send go-live notification to all configured channels."""
         if not self._check_cooldown(username):
             logger.debug(f"Notification cooldown active for @{username}")
@@ -74,7 +74,7 @@ class NotificationManager:
 
         if tasks:
             results = await asyncio.gather(*tasks, return_exceptions=True)
-            for i, result in enumerate(results):
+            for _i, result in enumerate(results):
                 if isinstance(result, Exception):
                     logger.error(f"Notification error: {result}")
 
@@ -83,8 +83,7 @@ class NotificationManager:
         try:
             import aiohttp
         except ImportError:
-            logger.warning("aiohttp not installed — Discord notifications disabled. "
-                           "Install with: pip install aiohttp")
+            logger.warning("aiohttp not installed — Discord notifications disabled. Install with: pip install aiohttp")
             return
 
         embed = {
@@ -109,8 +108,7 @@ class NotificationManager:
         try:
             import aiohttp
         except ImportError:
-            logger.warning("aiohttp not installed — Telegram notifications disabled. "
-                           "Install with: pip install aiohttp")
+            logger.warning("aiohttp not installed — Telegram notifications disabled. Install with: pip install aiohttp")
             return
 
         url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
@@ -132,10 +130,7 @@ class NotificationManager:
         """Send an email notification via SMTP."""
         subject = f"TikTok LIVE: @{username} is streaming!"
         body = (
-            f"@{username} just went live on TikTok.\n\n"
-            f"Watch: {url}\n"
-            f"Detected at: {timestamp}\n\n"
-            f"— TikTok Live Recorder"
+            f"@{username} just went live on TikTok.\n\nWatch: {url}\nDetected at: {timestamp}\n\n— TikTok Live Recorder"
         )
 
         msg = MIMEText(body)

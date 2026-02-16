@@ -1,6 +1,6 @@
 from src.config import Config
 from src.models import ChatMessage
-from src.utils import seconds_to_ass_time, escape_ass_text
+from src.utils import escape_ass_text, seconds_to_ass_time
 
 
 class SubtitleGenerator:
@@ -62,9 +62,7 @@ class SubtitleGenerator:
             "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
         )
 
-    def _calculate_position(
-        self, slot: int, video_width: int, video_height: int
-    ) -> tuple[int, int]:
+    def _calculate_position(self, slot: int, video_width: int, video_height: int) -> tuple[int, int]:
         """Calculate x,y position for a chat message at a given slot (0=bottom)."""
         line_height = self.config.chat_font_size + 8
         margin_x = self.config.chat_margin_x
@@ -105,9 +103,7 @@ class SubtitleGenerator:
             return self._format_join(msg)
         return self._format_comment(msg)
 
-    def generate(
-        self, messages: list[ChatMessage], video_width: int = 1920, video_height: int = 1080
-    ) -> str:
+    def generate(self, messages: list[ChatMessage], video_width: int = 1920, video_height: int = 1080) -> str:
         """Generate complete ASS subtitle content from chat messages."""
         lines = [self._build_header(video_width, video_height)]
         duration = self.config.chat_display_duration
@@ -117,10 +113,7 @@ class SubtitleGenerator:
             end = msg.timestamp + duration
 
             # Count how many messages are visible at this message's start time
-            visible = [
-                m for m in messages[:i]
-                if m.timestamp + duration > start
-            ]
+            visible = [m for m in messages[:i] if m.timestamp + duration > start]
             slot = len(visible)
             slot = min(slot, self.config.chat_max_lines - 1)
 
@@ -134,8 +127,7 @@ class SubtitleGenerator:
 
             alignment = "\\an7" if self.config.chat_position.endswith("left") else "\\an9"
             line = (
-                f"Dialogue: 0,{start_str},{end_str},{style},,0,0,0,,"
-                f"{{{alignment}\\pos({x},{y})\\fad(200,500)}}{text}"
+                f"Dialogue: 0,{start_str},{end_str},{style},,0,0,0,,{{{alignment}\\pos({x},{y})\\fad(200,500)}}{text}"
             )
             lines.append(line)
 

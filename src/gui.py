@@ -5,34 +5,59 @@ import os
 import sys
 import time
 from dataclasses import asdict
-from typing import Optional
 
-from PyQt6.QtCore import Qt, QTimer, QSize, QUrl
-from PyQt6.QtGui import QColor, QIcon, QPalette, QImage, QPixmap
-from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PyQt6.QtCore import QSize, Qt, QTimer, QUrl
+from PyQt6.QtGui import QColor, QIcon, QImage, QPalette, QPixmap
+from PyQt6.QtMultimedia import QAudioOutput, QMediaPlayer
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QLineEdit, QComboBox,
-    QTextEdit, QFrame, QScrollArea, QDialog, QFileDialog,
-    QSplitter, QListWidget, QListWidgetItem, QStackedWidget, QSizePolicy,
-    QProgressBar, QTabWidget, QGridLayout, QSlider,
+    QApplication,
+    QDialog,
+    QFileDialog,
+    QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QProgressBar,
+    QPushButton,
+    QScrollArea,
+    QSizePolicy,
+    QSlider,
+    QSplitter,
+    QStackedWidget,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
 from src.config import Config
+from src.gui_dialogs import NewTaskDialog, PreferencesDialog
+from src.gui_theme import (
+    ACTIVE_STATUSES,
+    DARK_STYLESHEET,
+    PROGRESS_COLORS,
+    STATUS_COLORS,
+    STATUS_DOTS,
+    STOPPED_STATUSES,
+    WAITING_STATUSES,
+)
+from src.gui_workers import (
+    AVATAR_CACHE_DIR,
+    AVATAR_SIZE,
+    AvatarFetchWorker,
+    EncodeWorker,
+    RecordingWorker,
+    VideoPreviewWorker,
+    _make_circular_pixmap,
+    _make_placeholder_avatar,
+)
 from src.models import ChatMessage
 from src.rate_limiter import RateLimiter
 from src.utils import format_duration
-
-from src.gui_theme import (
-    DARK_STYLESHEET, STATUS_COLORS, STATUS_DOTS,
-    ACTIVE_STATUSES, WAITING_STATUSES, STOPPED_STATUSES, PROGRESS_COLORS,
-)
-from src.gui_workers import (
-    AVATAR_CACHE_DIR, AVATAR_SIZE,
-    _make_circular_pixmap, _make_placeholder_avatar,
-    AvatarFetchWorker, RecordingWorker, VideoPreviewWorker, EncodeWorker,
-)
-from src.gui_dialogs import NewTaskDialog, PreferencesDialog
 
 # ─── Persistence ─────────────────────────────────────────────────────────────
 
@@ -60,7 +85,7 @@ DEFAULT_SETTINGS = {
 def load_settings() -> dict:
     if os.path.isfile(SETTINGS_FILE):
         try:
-            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            with open(SETTINGS_FILE, encoding="utf-8") as f:
                 data = json.load(f)
             merged = {**DEFAULT_SETTINGS, **data}
             return merged
@@ -79,9 +104,12 @@ def save_settings(settings: dict) -> None:
 
 # ─── Task Card ───────────────────────────────────────────────────────────────
 
+
 class TaskCard(QFrame):
     """Widget representing a single recording task with OlivedPro-inspired layout."""
+
     from PyQt6.QtCore import pyqtSignal
+
     status_updated = pyqtSignal(str)  # emitted after status changes, for parent to update sidebar
 
     _task_logger = logging.getLogger("src.gui.task")
@@ -91,18 +119,18 @@ class TaskCard(QFrame):
         self.setObjectName("card")
         self.config = config
         self.rate_limiter = rate_limiter
-        self.worker: Optional[RecordingWorker] = None
-        self.preview_worker: Optional[VideoPreviewWorker] = None
-        self.audio_player: Optional[QMediaPlayer] = None
-        self.audio_output: Optional[QAudioOutput] = None
+        self.worker: RecordingWorker | None = None
+        self.preview_worker: VideoPreviewWorker | None = None
+        self.audio_player: QMediaPlayer | None = None
+        self.audio_output: QAudioOutput | None = None
         self._last_volume: float = 0.5
         self._is_muted: bool = True
-        self.stream_url: Optional[str] = None
+        self.stream_url: str | None = None
         self._preview_hidden: bool = True
         self.status = "idle"
         self.msg_count = 0
-        self.monitoring_start_time: Optional[float] = None
-        self.start_time: Optional[float] = None
+        self.monitoring_start_time: float | None = None
+        self.start_time: float | None = None
         self._timer = QTimer()
         self._timer.timeout.connect(self._update_duration)
         self._file_size_timer = QTimer()
@@ -110,10 +138,10 @@ class TaskCard(QFrame):
         self._last_file_size = 0
         self._last_size_time = 0.0
         self._download_speed = 0.0
-        self.last_live_time: Optional[str] = None
-        self.record_start_time: Optional[str] = None
-        self._encode_worker: Optional[EncodeWorker] = None
-        self.last_recording_dir: Optional[str] = None
+        self.last_live_time: str | None = None
+        self.record_start_time: str | None = None
+        self._encode_worker: EncodeWorker | None = None
+        self.last_recording_dir: str | None = None
         self._encode_after_stop: bool = False
         self.worker_status_callback = None
         self._build_ui()
@@ -126,10 +154,7 @@ class TaskCard(QFrame):
         # ── Header: username + status badge ──
         header = QHBoxLayout()
         self.username_label = QLabel(f"@{self.config.unique_id}")
-        self.username_label.setStyleSheet(
-            "font-size: 18px; font-weight: 700; color: #f8fafc; "
-            "letter-spacing: -0.3px;"
-        )
+        self.username_label.setStyleSheet("font-size: 18px; font-weight: 700; color: #f8fafc; letter-spacing: -0.3px;")
         header.addWidget(self.username_label)
         header.addStretch()
 
@@ -242,18 +267,14 @@ class TaskCard(QFrame):
         self.toggle_preview_btn.setObjectName("ghost")
         self.toggle_preview_btn.setFixedHeight(24)
         self.toggle_preview_btn.setMinimumWidth(50)
-        self.toggle_preview_btn.setStyleSheet(
-            "QPushButton { padding: 2px 8px; font-size: 11px; }"
-        )
+        self.toggle_preview_btn.setStyleSheet("QPushButton { padding: 2px 8px; font-size: 11px; }")
         self.toggle_preview_btn.clicked.connect(self._toggle_preview)
         preview_header.addWidget(self.toggle_preview_btn)
         pc_layout.addLayout(preview_header)
 
         self.preview_label = QLabel()
         self.preview_label.setMinimumHeight(180)
-        self.preview_label.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
-        )
+        self.preview_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.preview_label.setText("Connecting to stream...")
         self.preview_label.setStyleSheet(
@@ -302,11 +323,15 @@ class TaskCard(QFrame):
 
         row = 0
         for label_text, attr_name in [
-            ("Status:", "info_status"), ("Last Live:", "info_last_live"),
-            ("Record Start:", "info_record_start"), ("Duration:", "info_duration"),
+            ("Status:", "info_status"),
+            ("Last Live:", "info_last_live"),
+            ("Record Start:", "info_record_start"),
+            ("Duration:", "info_duration"),
             ("Monitoring Time:", "info_monitoring_time"),
-            ("Filename:", "info_filename"), ("File Size:", "info_file_size"),
-            ("Download Speed:", "info_speed"), ("Chat Messages:", "info_chat_count"),
+            ("Filename:", "info_filename"),
+            ("File Size:", "info_file_size"),
+            ("Download Speed:", "info_speed"),
+            ("Chat Messages:", "info_chat_count"),
         ]:
             lbl = QLabel(label_text)
             lbl.setStyleSheet("color: #64748b; font-size: 12px; font-weight: 600;")
@@ -345,9 +370,7 @@ class TaskCard(QFrame):
         # ── Splitter: preview + detail tabs (drag to resize) ──
         self.content_splitter = QSplitter(Qt.Orientation.Vertical)
         self.content_splitter.setHandleWidth(4)
-        self.content_splitter.setStyleSheet(
-            "QSplitter::handle { background-color: #1f2937; border-radius: 2px; }"
-        )
+        self.content_splitter.setStyleSheet("QSplitter::handle { background-color: #1f2937; border-radius: 2px; }")
         self.content_splitter.addWidget(self.preview_container)
         self.content_splitter.addWidget(self.detail_tabs)
         self.content_splitter.setStretchFactor(0, 2)  # preview gets more space
@@ -478,9 +501,7 @@ class TaskCard(QFrame):
     def _start_preview(self):
         if not self.stream_url:
             return
-        self.preview_worker = VideoPreviewWorker(
-            self.stream_url, self.config.ffmpeg_path
-        )
+        self.preview_worker = VideoPreviewWorker(self.stream_url, self.config.ffmpeg_path)
         self.preview_worker.frame_ready.connect(self._on_preview_frame)
         self.preview_worker.start()
 
@@ -711,6 +732,7 @@ class TaskCard(QFrame):
 
     def _open_live_in_browser(self):
         import webbrowser
+
         webbrowser.open(f"https://www.tiktok.com/@{self.config.unique_id}/live")
 
     def _on_encode_log(self, text: str):
@@ -734,9 +756,12 @@ class TaskCard(QFrame):
         if self._encode_worker and self._encode_worker.isRunning():
             return
         # Don't start if recorder is auto-encoding
-        if (self.worker and self.worker.recorder
-                and self.worker.recorder._encoder
-                and self.worker.recorder._encoder.is_running):
+        if (
+            self.worker
+            and self.worker.recorder
+            and self.worker.recorder._encoder
+            and self.worker.recorder._encoder.is_running
+        ):
             self._on_log("Auto-encoding already in progress. Wait for it to finish.")
             return
 
@@ -750,9 +775,7 @@ class TaskCard(QFrame):
 
         # Not recording — use folder picker (default to last recording dir)
         start_dir = self.last_recording_dir or os.path.abspath(self.config.output_dir)
-        folder = QFileDialog.getExistingDirectory(
-            self, "Select Recording Folder", start_dir
-        )
+        folder = QFileDialog.getExistingDirectory(self, "Select Recording Folder", start_dir)
         if not folder:
             return
         self._do_encode(folder)
@@ -795,6 +818,7 @@ class TaskCard(QFrame):
 
 # ─── Main Window ─────────────────────────────────────────────────────────────
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -803,10 +827,8 @@ class MainWindow(QMainWindow):
         self.resize(1200, 750)
         self.tasks: list[tuple[QListWidgetItem, TaskCard]] = []
         self.settings = load_settings()
-        self.rate_limiter = RateLimiter(
-            min_delay=float(self.settings.get("rate_limit_delay", 10))
-        )
-        self._active_filter: Optional[str] = None  # None = show all
+        self.rate_limiter = RateLimiter(min_delay=float(self.settings.get("rate_limit_delay", 10)))
+        self._active_filter: str | None = None  # None = show all
         self._search_text = ""
         self._build_ui()
         self._load_tasks()
@@ -825,26 +847,17 @@ class MainWindow(QMainWindow):
 
         # ── Title bar ──
         titlebar = QWidget()
-        titlebar.setStyleSheet(
-            "background-color: #111827; "
-            "border-bottom: 1px solid #1f2937;"
-        )
+        titlebar.setStyleSheet("background-color: #111827; border-bottom: 1px solid #1f2937;")
         titlebar.setFixedHeight(52)
         tb_layout = QHBoxLayout(titlebar)
         tb_layout.setContentsMargins(20, 0, 20, 0)
 
         logo = QLabel("\u25cf")
-        logo.setStyleSheet(
-            "color: #F88C5E; font-size: 20px; "
-            "padding: 2px 6px; margin-right: 4px;"
-        )
+        logo.setStyleSheet("color: #F88C5E; font-size: 20px; padding: 2px 6px; margin-right: 4px;")
         tb_layout.addWidget(logo)
 
         app_title = QLabel("TikTok Live Recorder")
-        app_title.setStyleSheet(
-            "font-size: 16px; font-weight: 700; color: #f8fafc; "
-            "letter-spacing: -0.3px;"
-        )
+        app_title.setStyleSheet("font-size: 16px; font-weight: 700; color: #f8fafc; letter-spacing: -0.3px;")
         tb_layout.addWidget(app_title)
 
         version_chip = QLabel("v2.0")
@@ -924,8 +937,7 @@ class MainWindow(QMainWindow):
         tasks_header = QHBoxLayout()
         tasks_label = QLabel("TASKS")
         tasks_label.setStyleSheet(
-            "color: #4b5563; font-size: 11px; font-weight: 700; "
-            "letter-spacing: 1.2px; padding-top: 6px;"
+            "color: #4b5563; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; padding-top: 6px;"
         )
         tasks_header.addWidget(tasks_label)
         tasks_header.addStretch()
@@ -984,9 +996,7 @@ class MainWindow(QMainWindow):
         empty_layout.addSpacing(16)
 
         empty_text = QLabel("No recording tasks yet")
-        empty_text.setStyleSheet(
-            "font-size: 18px; font-weight: 600; color: #e2e8f0;"
-        )
+        empty_text.setStyleSheet("font-size: 18px; font-weight: 600; color: #e2e8f0;")
         empty_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         empty_layout.addWidget(empty_text)
         empty_layout.addSpacing(6)
@@ -1076,10 +1086,10 @@ class MainWindow(QMainWindow):
         card._remove_task()
         card._stop_preview()
 
-        for i, (item, c) in enumerate(self.tasks):
+        for i, (_item, c) in enumerate(self.tasks):
             if c is card:
                 self.task_list.takeItem(i)
-                if hasattr(c, '_scroll_area'):
+                if hasattr(c, "_scroll_area"):
                     self.stack.removeWidget(c._scroll_area)
                     c._scroll_area.deleteLater()
                 self.tasks.pop(i)
@@ -1113,7 +1123,7 @@ class MainWindow(QMainWindow):
         if row < 0 or row >= len(self.tasks):
             return
         _, card = self.tasks[row]
-        if hasattr(card, '_scroll_area'):
+        if hasattr(card, "_scroll_area"):
             self.stack.setCurrentWidget(card._scroll_area)
 
     # ── Filters & Search ──
@@ -1145,7 +1155,7 @@ class MainWindow(QMainWindow):
 
     def _apply_filters(self):
         """Show/hide task list items based on active filter and search text."""
-        for i, (item, card) in enumerate(self.tasks):
+        for _i, (item, card) in enumerate(self.tasks):
             visible = True
             # Status filter
             if self._active_filter:
@@ -1190,8 +1200,7 @@ class MainWindow(QMainWindow):
 
     # ── Avatars ──
 
-    def _fetch_avatar(self, unique_id: str, avatar_url: str,
-                      item: QListWidgetItem, config: Config):
+    def _fetch_avatar(self, unique_id: str, avatar_url: str, item: QListWidgetItem, config: Config):
         """Start a background fetch for a user's TikTok avatar."""
         # Check disk cache first (synchronous, fast)
         cache_path = os.path.join(AVATAR_CACHE_DIR, f"{unique_id}.jpg")
@@ -1242,7 +1251,7 @@ class MainWindow(QMainWindow):
         if not os.path.isfile(TASKS_FILE):
             return
         try:
-            with open(TASKS_FILE, "r", encoding="utf-8") as f:
+            with open(TASKS_FILE, encoding="utf-8") as f:
                 data = json.load(f)
         except (OSError, json.JSONDecodeError):
             return
@@ -1276,18 +1285,19 @@ class MainWindow(QMainWindow):
 
 # ─── Launch Function ─────────────────────────────────────────────────────────
 
+
 def _setup_file_logging():
     """Configure rotating file log for persistent debugging across sessions."""
     log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir, "recorder.log")
-    handler = logging.handlers.RotatingFileHandler(
-        log_path, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
+    handler = logging.handlers.RotatingFileHandler(log_path, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8")
+    handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
     )
-    handler.setFormatter(logging.Formatter(
-        "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    ))
     root_logger = logging.getLogger()
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.DEBUG)

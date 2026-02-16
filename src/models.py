@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass
@@ -27,7 +26,7 @@ class ChatMessage:
 @dataclass
 class RecordingSession:
     unique_id: str
-    room_id: Optional[int] = None
+    room_id: int | None = None
     start_time: float = 0.0
     output_dir: str = ""
     raw_video_path: str = ""

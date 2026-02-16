@@ -1,10 +1,8 @@
 import json
 import logging
 import time
-from typing import Optional
 
 from rich.console import Console
-
 from TikTokLive.client.client import TikTokLiveClient
 from TikTokLive.events.custom_events import ConnectEvent, DisconnectEvent, LiveEndEvent
 from TikTokLive.events.proto_events import CommentEvent, GiftEvent, JoinEvent
@@ -19,8 +17,7 @@ console = Console()
 class ChatCapture:
     """Captures TikTok live chat messages with timestamps."""
 
-    def __init__(self, client: TikTokLiveClient, config: Config, log_path: str,
-                 on_message=None):
+    def __init__(self, client: TikTokLiveClient, config: Config, log_path: str, on_message=None):
         self.client = client
         self.config = config
         self.log_path = log_path

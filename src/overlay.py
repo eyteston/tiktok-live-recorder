@@ -2,7 +2,7 @@ import logging
 import subprocess
 import sys
 import threading
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from src.config import Config
 from src.utils import normalize_path_for_ffmpeg
@@ -14,7 +14,7 @@ class OverlayEncoder:
     """Encodes chat overlay onto video. Supports cancellation."""
 
     def __init__(self):
-        self._process: Optional[subprocess.Popen] = None
+        self._process: subprocess.Popen | None = None
         self._cancelled = False
         self._lock = threading.Lock()
 
@@ -40,7 +40,7 @@ class OverlayEncoder:
         subtitle_file: str,
         output_file: str,
         config: Config,
-        on_progress: Optional[Callable[[str], None]] = None,
+        on_progress: Callable[[str], None] | None = None,
     ) -> bool:
         """Burn ASS subtitles onto video using FFmpeg.
 
@@ -55,13 +55,20 @@ class OverlayEncoder:
         cmd = [
             config.ffmpeg_path,
             "-y",
-            "-loglevel", "error",
-            "-i", raw_video,
-            "-vf", vf,
-            "-c:a", "copy",
-            "-c:v", "libx264",
-            "-preset", "fast",
-            "-crf", "23",
+            "-loglevel",
+            "error",
+            "-i",
+            raw_video,
+            "-vf",
+            vf,
+            "-c:a",
+            "copy",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "23",
             "-stats",
             output_file,
         ]
@@ -75,9 +82,7 @@ class OverlayEncoder:
                 stderr=subprocess.PIPE,
             )
             if sys.platform == "win32":
-                kwargs["creationflags"] = (
-                    subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-                )
+                kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
             with self._lock:
                 self._process = subprocess.Popen(cmd, **kwargs)
 
@@ -85,7 +90,7 @@ class OverlayEncoder:
             # Previously used self._process.wait() which deadlocks when
             # the stderr pipe buffer fills (~65KB) and nobody reads it.
             stderr_lines: list[str] = []
-            for line in iter(self._process.stderr.readline, b''):
+            for line in iter(self._process.stderr.readline, b""):
                 if self._cancelled:
                     break
                 decoded = line.decode("utf-8", errors="replace").strip()

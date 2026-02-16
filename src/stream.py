@@ -3,7 +3,6 @@ import logging
 import subprocess
 import sys
 import time
-from typing import Optional
 
 from src.config import Config
 
@@ -35,10 +34,7 @@ def extract_stream_url(room_info: dict, quality: str, fmt: str = "flv") -> tuple
                     logger.warning(f"Quality '{quality}' unavailable, using '{q}'")
                 return url, q
 
-    raise KeyError(
-        f"No stream URL found. Requested: '{quality}'. "
-        f"Available qualities: {list(available.keys())}"
-    )
+    raise KeyError(f"No stream URL found. Requested: '{quality}'. Available qualities: {list(available.keys())}")
 
 
 class StreamRecorder:
@@ -48,7 +44,7 @@ class StreamRecorder:
         self.stream_url = stream_url
         self.output_path = output_path
         self.config = config
-        self._process: Optional[subprocess.Popen] = None
+        self._process: subprocess.Popen | None = None
         self._start_time: float = 0.0
 
     @property
@@ -63,9 +59,12 @@ class StreamRecorder:
         cmd = [
             self.config.ffmpeg_path,
             "-y",
-            "-loglevel", "error",
-            "-i", self.stream_url,
-            "-c", "copy",
+            "-loglevel",
+            "error",
+            "-i",
+            self.stream_url,
+            "-c",
+            "copy",
         ]
         if self.config.max_duration > 0:
             cmd.extend(["-t", str(self.config.max_duration)])
@@ -80,13 +79,11 @@ class StreamRecorder:
         # On Windows, give each FFmpeg its own process group to prevent
         # handle inheritance conflicts between concurrent recordings
         if sys.platform == "win32":
-            kwargs["creationflags"] = (
-                subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
-            )
+            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
         self._process = subprocess.Popen(cmd, **kwargs)
         self._start_time = time.time()
 
-    def stop(self) -> Optional[str]:
+    def stop(self) -> str | None:
         """Stop the FFmpeg process. Returns stderr output if any."""
         if self._process is None:
             return None
@@ -119,7 +116,7 @@ class StreamRecorder:
             logger.warning(f"FFmpeg exited with code {ret}: {stderr}")
         return stderr
 
-    def wait(self, timeout: Optional[float] = None) -> int:
+    def wait(self, timeout: float | None = None) -> int:
         """Wait for FFmpeg to exit on its own. Returns the exit code."""
         if self._process is None:
             return -1

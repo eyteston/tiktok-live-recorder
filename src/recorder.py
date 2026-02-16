@@ -7,17 +7,16 @@ import time
 from datetime import datetime
 
 from rich.console import Console
-
 from TikTokLive.client.client import TikTokLiveClient
-from TikTokLive.client.errors import UserOfflineError, UserNotFoundError, SignatureRateLimitError
+from TikTokLive.client.errors import SignatureRateLimitError, UserNotFoundError, UserOfflineError
 
+from src.chat import ChatCapture
 from src.config import Config
 from src.models import ChatMessage, RecordingSession
-from src.stream import extract_stream_url, StreamRecorder
-from src.chat import ChatCapture
-from src.subtitle import SubtitleGenerator
 from src.overlay import OverlayEncoder
-from src.utils import find_ffmpeg, sanitize_filename, format_duration
+from src.stream import StreamRecorder, extract_stream_url
+from src.subtitle import SubtitleGenerator
+from src.utils import find_ffmpeg, format_duration, sanitize_filename
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -30,13 +29,14 @@ os.environ["WHITELIST_AUTHENTICATED_SESSION_ID_HOST"] = "tiktok.eulerstream.com"
 class TikTokRecorder:
     """Main orchestrator that coordinates stream recording, chat capture, and overlay."""
 
-    def __init__(self, config: Config, on_status=None, on_chat=None, on_log=None,
-                 on_stream_url=None, rate_limiter=None):
+    def __init__(
+        self, config: Config, on_status=None, on_chat=None, on_log=None, on_stream_url=None, rate_limiter=None
+    ):
         self.config = config
         self.session: RecordingSession = RecordingSession(unique_id=config.unique_id)
-        self._on_status = on_status      # fn(status_str)
-        self._on_chat = on_chat          # fn(ChatMessage)
-        self._on_log = on_log            # fn(text_str)
+        self._on_status = on_status  # fn(status_str)
+        self._on_chat = on_chat  # fn(ChatMessage)
+        self._on_log = on_log  # fn(text_str)
         self._on_stream_url = on_stream_url  # fn(url_str)
         self._rate_limiter = rate_limiter
         self._stop_requested = False
@@ -97,9 +97,7 @@ class TikTokRecorder:
         self.session.output_dir = os.path.join(self.config.output_dir, dirname)
         os.makedirs(self.session.output_dir, exist_ok=True)
 
-        self.session.raw_video_path = os.path.join(
-            self.session.output_dir, f"raw_video.{self.config.format}"
-        )
+        self.session.raw_video_path = os.path.join(self.session.output_dir, f"raw_video.{self.config.format}")
         self.session.chat_log_path = os.path.join(self.session.output_dir, "chat_log.jsonl")
         self.session.subtitle_path = os.path.join(self.session.output_dir, "overlay.ass")
         self.session.final_video_path = os.path.join(
@@ -182,7 +180,9 @@ class TikTokRecorder:
             except UserNotFoundError:
                 user_not_found_count += 1
                 if user_not_found_count >= 3:
-                    self._log(f"User @{self.config.unique_id} not found after {user_not_found_count} consecutive checks. Stopping.")
+                    self._log(
+                        f"User @{self.config.unique_id} not found after {user_not_found_count} consecutive checks. Stopping."
+                    )
                     self._emit_status("error")
                     try:
                         await client.close()
@@ -267,9 +267,7 @@ class TikTokRecorder:
                     return
 
                 try:
-                    stream_url, actual_quality = extract_stream_url(
-                        room_info, self.config.quality, self.config.format
-                    )
+                    stream_url, actual_quality = extract_stream_url(room_info, self.config.quality, self.config.format)
                 except (KeyError, json.JSONDecodeError) as e:
                     self._log(f"Failed to extract stream URL: {e}")
                     await client.disconnect(close_client=True)
@@ -280,7 +278,9 @@ class TikTokRecorder:
             self._log(f"Output: {self.session.output_dir}")
 
             chat = ChatCapture(
-                client, self.config, self.session.chat_log_path,
+                client,
+                self.config,
+                self.session.chat_log_path,
                 on_message=self._on_chat,
             )
             await chat.start()
@@ -292,9 +292,7 @@ class TikTokRecorder:
                         self._on_stream_url(stream_url)
                     except Exception:
                         pass
-                stream_recorder = StreamRecorder(
-                    stream_url, self.session.raw_video_path, self.config
-                )
+                stream_recorder = StreamRecorder(stream_url, self.session.raw_video_path, self.config)
                 stream_recorder.start()
                 self._log(f"Recording video (quality: {actual_quality}) + capturing chat...")
             else:

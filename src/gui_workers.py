@@ -3,10 +3,9 @@ import os
 import re
 import subprocess
 import sys
-from typing import Optional
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QColor, QImage, QPixmap, QPainter, QPainterPath, QBrush, QPen
+from PyQt6.QtGui import QBrush, QColor, QImage, QPainter, QPainterPath, QPen, QPixmap
 
 from src.config import Config
 from src.models import ChatMessage
@@ -20,8 +19,9 @@ AVATAR_SIZE = 32
 
 def _make_circular_pixmap(pixmap: QPixmap, size: int = AVATAR_SIZE) -> QPixmap:
     """Scale a pixmap and clip it to a circle."""
-    scaled = pixmap.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatioByExpanding,
-                           Qt.TransformationMode.SmoothTransformation)
+    scaled = pixmap.scaled(
+        size, size, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation
+    )
     # Center-crop if not square
     x = (scaled.width() - size) // 2
     y = (scaled.height() - size) // 2
@@ -66,6 +66,7 @@ def _make_placeholder_avatar(size: int = AVATAR_SIZE) -> QPixmap:
 
 class AvatarFetchWorker(QThread):
     """Background thread to fetch a TikTok avatar image."""
+
     avatar_ready = pyqtSignal(str, QPixmap)  # unique_id, circular pixmap
 
     def __init__(self, unique_id: str, avatar_url: str = "", parent=None):
@@ -76,9 +77,12 @@ class AvatarFetchWorker(QThread):
     def run(self):
         import httpx
         from TikTokLive.client.web.web_settings import (
-            DEFAULT_WEB_CLIENT_PARAMS, DEFAULT_REQUEST_HEADERS,
-            DEFAULT_COOKIES, WebDefaults,
+            DEFAULT_COOKIES,
+            DEFAULT_REQUEST_HEADERS,
+            DEFAULT_WEB_CLIENT_PARAMS,
+            WebDefaults,
         )
+
         os.makedirs(AVATAR_CACHE_DIR, exist_ok=True)
         cache_path = os.path.join(AVATAR_CACHE_DIR, f"{self.unique_id}.jpg")
 
@@ -111,8 +115,7 @@ class AvatarFetchWorker(QThread):
                 data = resp.json()
                 user_data = data.get("data") or {}
                 user = user_data.get("user") or {}
-                url = (user.get("avatarThumb") or user.get("avatarMedium")
-                       or user.get("avatarLarger") or "")
+                url = user.get("avatarThumb") or user.get("avatarMedium") or user.get("avatarLarger") or ""
             except Exception:
                 return  # No avatar — placeholder stays
 
@@ -121,8 +124,12 @@ class AvatarFetchWorker(QThread):
 
         # Download the image
         try:
-            resp = httpx.get(url, timeout=10, follow_redirects=True,
-                             headers={"User-Agent": DEFAULT_REQUEST_HEADERS.get("User-Agent", "Mozilla/5.0")})
+            resp = httpx.get(
+                url,
+                timeout=10,
+                follow_redirects=True,
+                headers={"User-Agent": DEFAULT_REQUEST_HEADERS.get("User-Agent", "Mozilla/5.0")},
+            )
             if resp.status_code == 200 and len(resp.content) > 100:
                 # Cache to disk
                 with open(cache_path, "wb") as f:
@@ -139,6 +146,7 @@ class AvatarFetchWorker(QThread):
 
 # ─── Recording Worker (QThread) ─────────────────────────────────────────────
 
+
 class RecordingWorker(QThread):
     status_changed = pyqtSignal(str)
     chat_message = pyqtSignal(ChatMessage)
@@ -150,10 +158,11 @@ class RecordingWorker(QThread):
         super().__init__()
         self.config = config
         self.rate_limiter = rate_limiter
-        self.recorder: Optional[TikTokRecorder] = None
+        self.recorder: TikTokRecorder | None = None
 
     def run(self):
         import traceback as _tb
+
         max_retries = 5
         consecutive_errors = 0
         backoff = 10.0
@@ -203,6 +212,7 @@ class RecordingWorker(QThread):
             if consecutive_errors < max_retries:
                 # Sleep with backoff before retry (check stop flag)
                 import time as _time
+
                 slept = 0.0
                 while slept < backoff:
                     if self.recorder and self.recorder._stop_requested:
@@ -234,6 +244,7 @@ class RecordingWorker(QThread):
 
 # ─── Video Preview Worker ────────────────────────────────────────────────────
 
+
 class VideoPreviewWorker(QThread):
     frame_ready = pyqtSignal(QImage)
     PREVIEW_WIDTH = 480
@@ -248,28 +259,27 @@ class VideoPreviewWorker(QThread):
     def run(self):
         self._running = True
         w = self.PREVIEW_WIDTH
-        # First, probe the stream to get the real dimensions
-        probe_cmd = [
-            self.ffmpeg_path, "-loglevel", "error",
-            "-i", self.stream_url,
-            "-vframes", "1", "-vf", f"scale={w}:-2",
-            "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1",
-        ]
         kwargs = dict(
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
         if sys.platform == "win32":
-            kwargs["creationflags"] = (
-                subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
-            )
+            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
         # Detect actual height by probing with showinfo filter
         detect_cmd = [
-            self.ffmpeg_path, "-loglevel", "error",
-            "-i", self.stream_url,
-            "-vframes", "1", "-vf", f"scale={w}:-2,showinfo",
-            "-f", "null", "-",
+            self.ffmpeg_path,
+            "-loglevel",
+            "error",
+            "-i",
+            self.stream_url,
+            "-vframes",
+            "1",
+            "-vf",
+            f"scale={w}:-2,showinfo",
+            "-f",
+            "null",
+            "-",
         ]
         detect_kwargs = dict(
             stdin=subprocess.DEVNULL,
@@ -277,15 +287,13 @@ class VideoPreviewWorker(QThread):
             stderr=subprocess.PIPE,
         )
         if sys.platform == "win32":
-            detect_kwargs["creationflags"] = (
-                subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
-            )
+            detect_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
         h = 270  # fallback
         try:
             det = subprocess.Popen(detect_cmd, **detect_kwargs)
             _, stderr_data = det.communicate(timeout=15)
             if stderr_data:
-                m = re.search(r'n:\s*\d+\s+.*?s:(\d+)x(\d+)', stderr_data.decode("utf-8", errors="replace"))
+                m = re.search(r"n:\s*\d+\s+.*?s:(\d+)x(\d+)", stderr_data.decode("utf-8", errors="replace"))
                 if m:
                     detected_w, detected_h = int(m.group(1)), int(m.group(2))
                     if detected_w == w:
@@ -295,11 +303,21 @@ class VideoPreviewWorker(QThread):
 
         frame_size = w * h * 3
         cmd = [
-            self.ffmpeg_path, "-loglevel", "error",
-            "-i", self.stream_url,
-            "-vf", f"scale={w}:{h}",
-            "-f", "rawvideo", "-pix_fmt", "rgb24",
-            "-r", "15", "-an", "pipe:1",
+            self.ffmpeg_path,
+            "-loglevel",
+            "error",
+            "-i",
+            self.stream_url,
+            "-vf",
+            f"scale={w}:{h}",
+            "-f",
+            "rawvideo",
+            "-pix_fmt",
+            "rgb24",
+            "-r",
+            "15",
+            "-an",
+            "pipe:1",
         ]
         try:
             self._process = subprocess.Popen(cmd, **kwargs)
@@ -334,8 +352,10 @@ class VideoPreviewWorker(QThread):
 
 # ─── Encode Worker (manual overlay encoding) ────────────────────────────────
 
+
 class EncodeWorker(QThread):
     """Background thread for manual overlay encoding from a recording folder."""
+
     progress = pyqtSignal(str)
     finished_signal = pyqtSignal(bool)
 
@@ -344,10 +364,12 @@ class EncodeWorker(QThread):
         self.folder = folder
         self.config = config
         from src.overlay import OverlayEncoder
+
         self._encoder = OverlayEncoder()
 
     def run(self):
         import json
+
         from src.models import ChatMessage
         from src.subtitle import SubtitleGenerator
 
@@ -373,7 +395,7 @@ class EncodeWorker(QThread):
         # Parse chat messages
         messages = []
         try:
-            with open(chat_log, "r", encoding="utf-8") as f:
+            with open(chat_log, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line:
@@ -406,7 +428,10 @@ class EncodeWorker(QThread):
             self.progress.emit(line)
 
         success = self._encoder.burn_subtitles(
-            raw_video, subtitle_path, output_file, self.config,
+            raw_video,
+            subtitle_path,
+            output_file,
+            self.config,
             on_progress=emit_progress,
         )
 

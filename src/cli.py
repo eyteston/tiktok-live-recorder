@@ -1,4 +1,5 @@
 import argparse
+
 from src.config import Config
 
 
@@ -13,12 +14,14 @@ def parse_args(argv: list[str]) -> Config:
         help="TikTok @username (with or without @)",
     )
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default="./recordings",
         help="Output directory (default: ./recordings/)",
     )
     parser.add_argument(
-        "-q", "--quality",
+        "-q",
+        "--quality",
         choices=["ld", "sd", "hd", "uhd", "origin"],
         default="hd",
         help="Video quality (default: hd)",
@@ -95,7 +98,8 @@ def parse_args(argv: list[str]) -> Config:
         help="TikTok sessionid cookie for age-restricted/login-required streams",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Verbose logging output",
     )

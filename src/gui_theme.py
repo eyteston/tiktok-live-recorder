@@ -1,23 +1,23 @@
 # ─── Status helpers ──────────────────────────────────────────────────────────
 
 STATUS_COLORS = {
-    "idle":       ("#1e293b",                   "#6b7280"),
-    "checking":   ("rgba(96, 165, 250, 0.1)",   "#60a5fa"),
-    "monitoring": ("rgba(168, 85, 247, 0.1)",   "#a855f7"),
-    "recording":  ("rgba(74, 222, 128, 0.1)",   "#4ade80"),
-    "encoding":   ("rgba(251, 191, 36, 0.1)",   "#fbbf24"),
-    "done":       ("rgba(16, 185, 129, 0.1)",   "#10b981"),
-    "error":      ("rgba(248, 113, 113, 0.1)",  "#f87171"),
+    "idle": ("#1e293b", "#6b7280"),
+    "checking": ("rgba(96, 165, 250, 0.1)", "#60a5fa"),
+    "monitoring": ("rgba(168, 85, 247, 0.1)", "#a855f7"),
+    "recording": ("rgba(74, 222, 128, 0.1)", "#4ade80"),
+    "encoding": ("rgba(251, 191, 36, 0.1)", "#fbbf24"),
+    "done": ("rgba(16, 185, 129, 0.1)", "#10b981"),
+    "error": ("rgba(248, 113, 113, 0.1)", "#f87171"),
 }
 
 STATUS_DOTS = {
-    "idle":       "\u25cb",   # empty circle
-    "checking":   "\u25d4",   # quarter circle
-    "monitoring": "\u25ce",   # bullseye
-    "recording":  "\u25cf",   # filled circle
-    "encoding":   "\u25d0",   # left half
-    "done":       "\u2713",   # checkmark
-    "error":      "\u2717",   # x mark
+    "idle": "\u25cb",  # empty circle
+    "checking": "\u25d4",  # quarter circle
+    "monitoring": "\u25ce",  # bullseye
+    "recording": "\u25cf",  # filled circle
+    "encoding": "\u25d0",  # left half
+    "done": "\u2713",  # checkmark
+    "error": "\u2717",  # x mark
 }
 
 ACTIVE_STATUSES = {"recording", "encoding", "checking"}
@@ -25,10 +25,10 @@ WAITING_STATUSES = {"monitoring", "idle"}
 STOPPED_STATUSES = {"done", "error"}
 
 PROGRESS_COLORS = {
-    "recording":  "#4ade80",
+    "recording": "#4ade80",
     "monitoring": "#a855f7",
-    "checking":   "#60a5fa",
-    "encoding":   "#fbbf24",
+    "checking": "#60a5fa",
+    "encoding": "#fbbf24",
 }
 
 # ─── Dark Theme ──────────────────────────────────────────────────────────────

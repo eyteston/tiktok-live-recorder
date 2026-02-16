@@ -1,26 +1,36 @@
 import re
-from typing import Optional
 
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox,
-    QScrollArea, QDialog, QFileDialog, QCheckBox, QTabWidget,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDoubleSpinBox,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QScrollArea,
+    QSpinBox,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
 )
 
 from src.config import Config
 
-
 # ─── New Task Dialog ─────────────────────────────────────────────────────────
+
 
 class NewTaskDialog(QDialog):
     """Dialog for creating or editing a recording task."""
 
-    def __init__(self, parent=None, existing_config: Optional[Config] = None):
+    def __init__(self, parent=None, existing_config: Config | None = None):
         super().__init__(parent)
         self._editing = existing_config is not None
         self.setWindowTitle("Edit Task" if self._editing else "New Recording Task")
         self.setFixedSize(480, 720)
-        self.result_config: Optional[Config] = None
+        self.result_config: Config | None = None
         self._build_ui()
         if existing_config:
             self._prefill(existing_config)
@@ -191,7 +201,7 @@ class NewTaskDialog(QDialog):
     @staticmethod
     def _extract_username(text: str) -> str:
         text = text.strip()
-        m = re.search(r'tiktok\.com/@([a-zA-Z0-9._-]+)', text)
+        m = re.search(r"tiktok\.com/@([a-zA-Z0-9._-]+)", text)
         if m:
             return m.group(1)
         return text.lstrip("@")
@@ -229,6 +239,7 @@ class NewTaskDialog(QDialog):
 
 
 # ─── Preferences Dialog (Multi-Tab) ─────────────────────────────────────────
+
 
 class PreferencesDialog(QDialog):
     """Multi-tab preferences dialog inspired by OlivedPro."""
